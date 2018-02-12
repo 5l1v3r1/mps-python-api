@@ -22,7 +22,7 @@
 #  
 #  
 
-import os,urllib.error,shutil
+import os,urllib.error
 import urllib.request
 class API :
 	""" Milis Paket Sistemi işlemleri için native Python kütüphaneleri """
@@ -35,7 +35,7 @@ class API :
 		#self.paketDepo="/depo/paketler/"
 		self.paketDepo=""
 		self.talimatDepo="/root/talimatname"
-	
+
 	def __ayarDosyaOku(self):
 		f=open(self.ayarDosya,'r')
 		satirlar=f.readlines()
@@ -122,12 +122,25 @@ class API :
 		else:
 			return False	
 
-	def bagimliPaketListele(self,paket):
+	def kurulacakBagimliliklar(self,paket,**kwargs):
+		if not "name" in kwargs.keys():
+			tumbag=set()
+		else:
+			tumbag=kwargs["tumbag"]
 		for dizin, altdizin, dosya in os.walk(self.talimatDepo):
 			if dizin.split("/")[-1] == paket:
 				talimat=open("{}/talimat".format(dizin),"r")
-				bagimlilar=set(talimat.read().split('\n')[3].split(':')[1].split(' '))
-				if '' in bagimlilar:
-					bagimlilar.remove('')
-				return bagimlilar
-
+				satir=talimat.read().splitlines()[3]
+				if "# Gerekler:" in satir:
+						satir = satir.split(':')[1]
+						bagimliliklar = satir.split(" ")
+						for bagimlilik in bagimliliklar:
+							if len(bagimlilik) > 0:
+								if not bagimlilik in tumbag: 
+									if not self.kuruluKontrol(bagimlilik):
+										tumbag.add(bagimlilik)
+										for i in self.kurulacakBagimliliklar(bagimlilik,tumbag=tumbag):
+											for bagimlilik in i:
+												tumbag.add(bagimlilik)
+										tumbag.add(paket)
+										yield(list(tumbag))

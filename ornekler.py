@@ -49,10 +49,11 @@ if __name__ == '__main__':
 
 	
 	
-	print("#Bağımlılık Listeleme")
+	print("#Kurulack Bağımlılıklar")
 	
-	for i in  mps.bagimliPaketListele(paket):
-		print(i)
+	for i in mps.bagimliPaketListele(paket):
+		liste=i
+	print(liste)
 
 
 
